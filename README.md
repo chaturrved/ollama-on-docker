@@ -186,6 +186,6 @@ MIT License - Feel free to modify and distribute this code.
 
 ## 📚 Additional Resources
 
-- [Ollama Documentation](https://ollama.ai/docs)
+- [Ollama Documentation](https://github.com/ollama/ollama)
 - [Docker Documentation](https://docs.docker.com/)
 - [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker)
