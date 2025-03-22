@@ -1,0 +1,63 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    mem_limit: "10g"
+    mem_reservation: "6g"
+    restart: unless-stopped
+    networks:
+      - ollama-net
+
+  ollama-webui:
+    image: ghcr.io/ollama-webui/ollama-webui:main
+    container_name: ollama-webui
+    depends_on:
+      - ollama
+      - db
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_API_BASE_URL=http://ollama:11434/api
+      - DATABASE_TYPE=postgres
+      - DATABASE_URL=postgresql://ollamauser:ollamapass@db:5432/ollama
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ollama
+      - POSTGRES_USER=ollamauser
+      - POSTGRES_PASSWORD=ollamapass
+    mem_limit: "1g"
+    restart: unless-stopped
+    networks:
+      - ollama-net
+
+  db:
+    image: postgres:15-alpine
+    container_name: ollama-db
+    environment:
+      POSTGRES_DB: ollama
+      POSTGRES_USER: ollamauser
+      POSTGRES_PASSWORD: ollamapass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    mem_limit: "2g"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ollamauser -d ollama"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+    networks:
+      - ollama-net
+
+volumes:
+  ollama_data:
+  postgres_data:
+
+networks:
+  ollama-net:
+    driver: bridge
